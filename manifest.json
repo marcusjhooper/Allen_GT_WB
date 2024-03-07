@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "locale": "en_CA.UTF-8",
+  "metadata": {
+    "appmode": "python-dash",
+    "entrypoint": "./scripts/main.py"
+  },
+  "python": {
+    "version": "3.12.1",
+    "package_manager": {
+      "name": "pip",
+      "version": "23.3.1",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "62f57bc114e3ca272ca6b588694a1c60"
+    },
+    "AIT21_BG_subset.html": {
+      "checksum": "b0ee95fc6ef3245ca4dd16b806781eba"
+    },
+    "LICENSE": {
+      "checksum": "1ebbd3e34237af26da5dc08a4e440464"
+    },
+    "README.md": {
+      "checksum": "9116628022135fa8978d13354d17c2f6"
+    },
+    "WB_hierarchy.Rproj": {
+      "checksum": "c8d3f84a410f46d4d8b03a268e313e35"
+    },
+    "cell_metadata.csv": {
+      "checksum": "b64b4c9761c4fb4a71b8db6c5223baa3"
+    },
+    "color_wheel.gv.txt": {
+      "checksum": "ed90632dd25e7b15af55006fad3c7665"
+    },
+    "pip_requirements.txt": {
+      "checksum": "08b0c379d0d30c9c0c7a7faa4062bbfe"
+    },
+    "scripts/.Rhistory": {
+      "checksum": "554832942cb2af363bce51c903146ae2"
+    },
+    "scripts/.ipynb_checkpoints/Untitled-checkpoint.ipynb": {
+      "checksum": "dcbd230579c2dd3e83027abbe30dad45"
+    },
+    "scripts/.ipynb_checkpoints/Untitled1-checkpoint.ipynb": {
+      "checksum": "2f6cceae1d861df553a6ebb64b6862ef"
+    },
+    "scripts/.ipynb_checkpoints/dash_test-checkpoint.ipynb": {
+      "checksum": "a6bee8cfd67238c23a6af6a3b85caa73"
+    },
+    "scripts/.ipynb_checkpoints/main-checkpoint.py": {
+      "checksum": "c92d39fa2c3b28d74cfeb723b8991023"
+    },
+    "scripts/dash_networkx.yml": {
+      "checksum": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "scripts/main.py": {
+      "checksum": "890e6fa5e3273b8e86f720632785e842"
+    },
+    "scripts/set_up_graph.py": {
+      "checksum": "4f68d4679e9115a3e21abb5e478e33ed"
+    },
+    "scripts/test.py": {
+      "checksum": "3c1611444c01f02c5780a0cf93512c67"
+    },
+    "test.dot": {
+      "checksum": "8a344187805533d39e9d160470903dbf"
+    }
+  }
+}
