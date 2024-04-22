@@ -36,48 +36,45 @@ root_value = "gray" # black
 pd.options.mode.chained_assignment = None
 log_transform = False
 
-<<<<<<< HEAD
+
 
 #os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
-os.chdir('/home/mh/app/WB_hierarchy/') #local
-=======
+
 #os.chdir('/home/mh/app/WB_hierarchy/')#local
-os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
-
->>>>>>> update python version
+#os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
 
 
+test = False
+
+if test == True:
+    os.chdir('/home/mh/app/WB_hierarchy/Allen_GT_WB/Allen_GT_WB') #local
+    cldf = pd.read_csv('/home/mh/app/WB_hierarchy_data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    clus = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - clusters 230815.tsv')
+    sub = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - subclasses 230815.tsv')
+    clas = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - classes 230815.tsv')
+    sup = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - supertypes 230815.tsv')
+    MER = pd.read_feather('/home/mh/app/WB_hierarchy_data/app_MERFISH_data.feather')
+
+elif test == False:
+    cldf = pd.read_csv('./allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    clus = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - clusters 230815.tsv')
+    sub = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - subclasses 230815.tsv')
+    clas = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - classes 230815.tsv')
+    sup = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - supertypes 230815.tsv')
+    MER = pd.read_feather('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/app_MERFISH_data.feather')
 
 
 
-<<<<<<< HEAD
-cldf = pd.read_csv('./allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
+
+
 #### read data and set up colors
-clus = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - clusters 230815.tsv')
-clus = clus[['cluster_label','cluster_color']]
-sub = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - subclasses 230815.tsv')
-sub = sub[['subclass_id_label','subclass_color']]
-clas = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - classes 230815.tsv')
-clas = clas[['class_id_label','class_color']]
-sup = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - supertypes 230815.tsv')
-sup = sup[['supertype_id_label','supertype_color']]
-root = pd.DataFrame({'id' : ['0_WB'],'node_var' : [root_value]})
-
-
-=======
-#cldf = pd.read_csv('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
-cldf = pd.read_csv('./data/AIT21_updated_cldf_for_BG_with_parent.csv')
-
-#### read data and set up colors
-clus = pd.read_table('./data/WB_colorpal - clusters 230815.tsv')
 clus.columns = clus.columns.str.replace('cluster_label','cluster_id_label')
 clus = clus[['cluster_id_label','cluster_color']]
-sub = pd.read_table('./data/WB_colorpal - subclasses 230815.tsv')
 sub = sub[['subclass_id_label','subclass_color']]
-clas = pd.read_table('./data/WB_colorpal - classes 230815.tsv')
 clas = clas[['class_id_label','class_color']]
-sup = pd.read_table('./data/WB_colorpal - supertypes 230815.tsv')
 sup = sup[['supertype_id_label','supertype_color']]
+
+#### read data and set up colors
 root = pd.DataFrame({'id' : ['0_WB'],'node_var' : [root_value]})
 
 #add colors
@@ -87,16 +84,15 @@ cldf = cldf.merge(right = sup[['supertype_id_label','supertype_color']], on = 's
 cldf = cldf.merge(right = clas[['class_id_label','class_color']], on = 'class_id_label')
 
 cldf.index = cldf['cl']
->>>>>>> update python version
+
 clusters = cldf[cldf.BG == "Keep"].cluster_id_label.unique().tolist()
 
 #load pre-downsampled MERFISH data
-MER = pd.read_feather('data/app_MERFISH_data.feather')
-<<<<<<< HEAD
 
-=======
+
+
 MER['point_color'] = 'lightgrey'
->>>>>>> update python version
+
 # 
 #os.chdir('/home/mh/app/WB_hierarchy/') #local
 
@@ -190,9 +186,9 @@ def get_graph_components(graph = G,data = cldf, clusters = clusters,
     return plot_components
 
 
-<<<<<<< HEAD
 
-=======
+
+
 def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
     prefix = groupBy.replace("_id_label","")
     if dataset_filter == "All":
@@ -245,7 +241,7 @@ def build_plotly_bar(data,groupBy, width=800, height=800):
     #fig1.update_layout(yaxis={'visible': False, 'showticklabels': False})
     #fig1.update_layout(xaxis={'visible': False, 'showticklabels': False})
     return fig1
->>>>>>> update python version
+
 
 def build_plotly_taxonomy_full_graph(graph,data,clusters, width=800, height=800,
                                      regular_edge_color = 'lightgrey',highlight_color = 'springgreen'):
@@ -381,15 +377,12 @@ def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
                    mode='markers',
                    name='net',
                    marker=dict(symbol='circle-dot',
-<<<<<<< HEAD
-                                 size= graph_components['node_size'],
-                                 sizeref=2.*max(graph_components['node_size'])/(10.**2),
-                                 color = graph_components['node_color'],
-=======
+
+
                                  size= sub_sizes,
                                  sizeref=2.*max(sub_sizes)/(10.**2),
                                  color = sub_colors,
->>>>>>> update python version
+
                                  line=dict(color='rgb(50,50,50)', width=0.5)
                                  ),
                    text=graph_components['node_text'],
@@ -408,15 +401,23 @@ def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
     return fig1
 
 
+   
+
 
 ##orig_full_graph - for resetting
-cldf = pd.read_csv('./data/AIT21_updated_cldf_for_BG_with_parent.csv')
+if test == True:
+    cldf = pd.read_csv('/home/mh/app/WB_hierarchy_data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    data_file = '/home/mh/app/WB_hierarchy_data/test_dataset.csv'
+elif test == False:
+    cldf = pd.read_csv('./allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    data_file = '/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/test_dataset.csv'
+
 cldf.index = cldf['cl']
-<<<<<<< HEAD
-data_file = '/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/test_dataset.csv'
-=======
-data_file = './data/test_dataset.csv'
->>>>>>> update python version
+
+
+
+
+
 counts_data = pd.read_csv(data_file,low_memory = False)
 
 #table for filtering
