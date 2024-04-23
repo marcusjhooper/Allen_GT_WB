@@ -37,7 +37,7 @@ import json
 
 
 
-test = False
+test = True
 if test == True:
     os.chdir('/home/mh/app/WB_hierarchy/Allen_GT_WB/Allen_GT_WB')#local
     exec(open("./scripts/set_up_graph.py").read())#local

@@ -44,7 +44,7 @@ log_transform = False
 #os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
 
 
-test = False
+test = True
 
 if test == True:
     os.chdir('/home/mh/app/WB_hierarchy/Allen_GT_WB/Allen_GT_WB') #local
@@ -317,9 +317,12 @@ def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
     graph_components = get_graph_components(graph = graph,data = data, clusters = clusters)
     edges_to_keep = graph_components['edges_to_keep']
     graph = graph.edge_subgraph(edges_to_keep)
-    sub_colors = graph_components['node_color'].loc[list(graph.nodes)]
-    sub_sizes = graph_components['node_size'].loc[list(graph.nodes)]
-
+    graph_components = get_graph_components(graph = graph,data = data, clusters = clusters)
+    #sub_colors = graph_components['node_color'].loc[list(graph.nodes)]
+    #sub_sizes = graph_components['node_size'].loc[list(graph.nodes)]
+    sub_colors = graph_components['node_color']
+    sub_sizes = graph_components['node_size']
+    
     pos = graphviz_layout(graph, prog="twopi")
     nodes = list(graph.nodes)
     
