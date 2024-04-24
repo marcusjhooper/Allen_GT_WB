@@ -56,7 +56,7 @@ if test == True:
     MER = pd.read_feather('/home/mh/app/WB_hierarchy_data/app_MERFISH_data.feather')
 
 elif test == False:
-    cldf = pd.read_csv('./allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    cldf = pd.read_csv('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
     clus = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - clusters 230815.tsv')
     sub = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - subclasses 230815.tsv')
     clas = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - classes 230815.tsv')
@@ -186,7 +186,25 @@ def get_graph_components(graph = G,data = cldf, clusters = clusters,
     return plot_components
 
 
+def update_image(clickData):
+   color = ['blue'] * 4
 
+   fig = {
+       'data': [{
+           'type': 'bar',
+           'x': [1,2,3,4],
+           'y': [10,8,11,7],
+           'marker': {
+               'color': color
+           }
+       }],
+       'layout': {
+           'title': 'click a bar'
+       }
+   }
+   if clickData is not None:
+       fig['data'][0]['marker']['color'][clickData['points'][0]['pointNumber']] = 'red'
+   return fig
 
 
 def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
@@ -213,7 +231,44 @@ def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
 
 
 
-def build_plotly_bar(data,groupBy, width=800, height=800):
+def build_plotly_bar(data,groupBy,clickData = "X", width=800, height=800):
+
+    prefix = groupBy.replace("_id_label","")
+    axis=dict(showline=False,zeroline=False,
+              showgrid=False,showticklabels=False,
+              title='')
+
+    layout=Layout(title= dict(text = "Observed populations",font= dict(size=20)),
+        showlegend=False,autosize=False,
+        width=width,height=height,yaxis_title=dict(text = "N",font=dict(size=14)),
+        hovermode='closest',
+        annotations=[
+               dict(
+               showarrow=False,text='',
+                xref='paper',yref='paper',
+                x=0,y=-0.1,
+                xanchor='left',yanchor='bottom',
+                font=dict(size=14)
+               )])
+
+    color_col = groupBy.replace('_id_label','_color')
+    print(clickData)
+    # if(clickData !="X"):
+    #     data = data.reset_index()
+    #     selected_group = clickData["points"][0]["label"]
+    #     indexer = data[data[groupBy] == selected_group].index    
+    #     data.loc[indexer, color_col] = 'red'
+
+    data = data[data[prefix+'_counts'] !=0]
+    #data = [go.Bar(x = data[groupBy],y = data[prefix+"_counts"],color= data[color_col])]
+    fig1 = px.bar(data, x=groupBy, y=prefix+"_counts",
+             hover_data=[groupBy,prefix+"_counts"], color=color_col, height=height, width = width)
+    #fig1=go.Figure(data=data, layout=layout)
+    #fig1.update_layout(yaxis={'visible': False, 'showticklabels': False})
+    #fig1.update_layout(xaxis={'visible': False, 'showticklabels': False})
+    return fig1
+
+def build_plotly_bar_init(data,groupBy, width=800, height=800):
 
     prefix = groupBy.replace("_id_label","")
     axis=dict(showline=False,zeroline=False,
@@ -233,10 +288,12 @@ def build_plotly_bar(data,groupBy, width=800, height=800):
                 font=dict(size=14)
                )]
                  )
+
     color_col = groupBy.replace('_id_label','_color')
     data = data[data[prefix+'_counts'] !=0]
     print(data.head())
-    data = [go.Bar(x = data[groupBy],y = data[prefix+"_counts"])]#,marker_color= data[color_col]
+    data[groupBy]
+    data = [go.Bar(x = data[groupBy],y = data[prefix+"_counts"])]
     fig1=go.Figure(data=data, layout=layout)
     #fig1.update_layout(yaxis={'visible': False, 'showticklabels': False})
     #fig1.update_layout(xaxis={'visible': False, 'showticklabels': False})
