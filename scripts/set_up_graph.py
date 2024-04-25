@@ -23,7 +23,7 @@ import igraph as ig
 import plotly
 from plotly.graph_objs import *
 from itertools import compress
-
+import s3fs
 #pandas.read_feather('/allen/programs/celltypes/workgroups/rnaseqana')
 
 
@@ -44,7 +44,7 @@ log_transform = False
 #os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
 
 
-test = True
+test = False
 
 if test == True:
     os.chdir('/home/mh/app/WB_hierarchy/Allen_GT_WB/Allen_GT_WB') #local
@@ -56,12 +56,13 @@ if test == True:
     MER = pd.read_feather('/home/mh/app/WB_hierarchy_data/app_MERFISH_data.feather')
 
 elif test == False:
-    cldf = pd.read_csv('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
-    clus = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - clusters 230815.tsv')
-    sub = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - subclasses 230815.tsv')
-    clas = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - classes 230815.tsv')
-    sup = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - supertypes 230815.tsv')
-    MER = pd.read_feather('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/app_MERFISH_data.feather')
+    #os.chdir('app/Allen_GT_WB')
+    cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
+    sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')
+    clas = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - classes 230815.tsv')
+    sup = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - supertypes 230815.tsv')
+    MER = pd.read_feather('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/app_MERFISH_data.feather')
 
 
 
@@ -230,8 +231,28 @@ def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
 
 
 
+default_click_data = {
+  "points": [
+    {
+      "curveNumber": 0,
+      "pointNumber": 0,
+      "pointIndex": 0,
+      "x": "046 Vip Gaba",
+      "y": 16,
+      "label": "046 Vip Gaba",
+      "value": 16,
+      "bbox": {
+        "x0": 2012.57,
+        "x1": 2169.1,
+        "y0": 776.0699999999999,
+        "y1": 776.0699999999999
+      }
+    }
+  ]
+}
 
-def build_plotly_bar(data,groupBy,clickData = "X", width=800, height=800):
+
+def build_plotly_bar(data,groupBy,clickData = default_click_data, width=800, height=800):
 
     prefix = groupBy.replace("_id_label","")
     axis=dict(showline=False,zeroline=False,
@@ -469,8 +490,8 @@ if test == True:
     cldf = pd.read_csv('/home/mh/app/WB_hierarchy_data/AIT21_updated_cldf_for_BG_with_parent.csv')
     data_file = '/home/mh/app/WB_hierarchy_data/test_dataset.csv'
 elif test == False:
-    cldf = pd.read_csv('./allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
-    data_file = '/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/test_dataset.csv'
+    cldf = pd.read_csv('.s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/test_dataset.csv'
 
 cldf.index = cldf['cl']
 

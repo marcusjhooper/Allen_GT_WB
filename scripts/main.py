@@ -31,7 +31,7 @@ from itertools import compress
 from networkx.drawing.nx_agraph import graphviz_layout
 import seaborn as sns
 import json
-
+import s3fs
 #initial setup ---------------------------------------------------
 
 
@@ -39,25 +39,24 @@ import json
 
 test = True
 if test == True:
-    os.chdir('/home/mh/app/WB_hierarchy/Allen_GT_WB/Allen_GT_WB')#local
     exec(open("./scripts/set_up_graph.py").read())#local
-    data_file = '/home/mh/app/WB_hierarchy_data/SmartSeq_all_annotation_hmapped.csv'
-    cldf = pd.read_csv('/home/mh/app/WB_hierarchy_data/AIT21_updated_cldf_for_BG_with_parent.csv')
-    clus = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - clusters 230815.tsv')
-    sub = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - subclasses 230815.tsv')
-    clas = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - classes 230815.tsv')
-    sup = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - supertypes 230815.tsv')
-    MER = pd.read_feather('/home/mh/app/WB_hierarchy_data/app_MERFISH_data.feather')
+    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/'
+    cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
+    sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')
+    clas = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - classes 230815.tsv')
+    sup = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - supertypes 230815.tsv')
+    MER = pd.read_feather('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/app_MERFISH_data.feather')
 elif test == False:
-    os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
-    exec(open("./scripts/set_up_graph.py").read())#local
-    data_file = '/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/'
-    cldf = pd.read_csv('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/AIT21_updated_cldf_for_BG_with_parent.csv')
-    clus = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - clusters 230815.tsv')
-    sub = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - subclasses 230815.tsv')
-    clas = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - classes 230815.tsv')
-    sup = pd.read_table('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/WB_colorpal - supertypes 230815.tsv')
-    MER = pd.read_feather('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/Allen_GT_WB_data/app_MERFISH_data.feather')
+    #os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
+    exec(open("./scripts/set_up_graph.py").read())#
+    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/'
+    cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
+    sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')
+    clas = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - classes 230815.tsv')
+    sup = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - supertypes 230815.tsv')
+    MER = pd.read_feather('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/app_MERFISH_data.feather')
 
 
 #### read data and set up colors
