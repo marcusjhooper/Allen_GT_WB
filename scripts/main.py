@@ -37,10 +37,10 @@ import s3fs
 
 
 
-test = True
+test = False
 if test == True:
-    exec(open("./scripts/set_up_graph.py").read())#local
-    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/'
+    exec(open("./scripts/set_up_graph.py").read())#
+    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/SmartSeq_all_annotation_hmapped.csv'
     cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
     clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
     sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')
@@ -50,7 +50,7 @@ if test == True:
 elif test == False:
     #os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
     exec(open("./scripts/set_up_graph.py").read())#
-    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/'
+    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/SmartSeq_all_annotation_hmapped.csv'
     cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
     clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
     sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')

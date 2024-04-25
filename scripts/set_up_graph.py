@@ -490,7 +490,7 @@ if test == True:
     cldf = pd.read_csv('/home/mh/app/WB_hierarchy_data/AIT21_updated_cldf_for_BG_with_parent.csv')
     data_file = '/home/mh/app/WB_hierarchy_data/test_dataset.csv'
 elif test == False:
-    cldf = pd.read_csv('.s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
     data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/test_dataset.csv'
 
 cldf.index = cldf['cl']
