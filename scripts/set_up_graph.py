@@ -137,7 +137,7 @@ def get_graph_components(graph = G,data = cldf, clusters = clusters,
                         regular_edge_color = regular_edge_color,
                         attr = 'cluster_percent', pos = pos):
     #keep all clusters, supertypes, subclasses and classes from list of clusters
-    nodes_to_keep = ["0_WB"] +clusters + cldf[cldf['cluster_id_label'].isin(clusters)].supertype_id_label.tolist() + cldf[cldf['cluster_id_label'].isin(clusters)].class_id_label.tolist() + cldf[cldf['cluster_id_label'].isin(clusters)].subclass_id_label.tolist()
+    nodes_to_keep = ["0_WB"] +clusters + data[data['cluster_id_label'].isin(clusters)].supertype_id_label.tolist() + data[data['cluster_id_label'].isin(clusters)].class_id_label.tolist() + data[data['cluster_id_label'].isin(clusters)].subclass_id_label.tolist()
     nodes_to_keep = pd.Series(nodes_to_keep).unique().tolist()
     
     #get all edges of interest from list of nodes to keep
@@ -161,12 +161,19 @@ def get_graph_components(graph = G,data = cldf, clusters = clusters,
     node_attrs = pd.concat([df,df2,df3,df4,df5], ignore_index=True)
     node_attrs = node_attrs.drop_duplicates(subset = 'id')
     node_attrs.index = node_attrs['id']
-    node_attrs.head()
+    node_attrs.loc[~ node_attrs.index.isin(clusters),'node_var' ] = 0# set non cluster values to 0 for now
+    
 
     #set up aesthetics
     node_size = node_attrs.loc[nodes,:]['node_var']
     node_color = node_cols.loc[nodes,:]['node_var']
-    node_text = [x+" percent: "+ str(y) for x,y in list(zip(nodes, node_size))]
+    node_labels = node_cols.loc[nodes,:]['id']
+    node_labels.index = node_labels
+    node_text = node_labels+" percent: "+node_size.astype('str')
+    node_text.index = node_labels
+    node_text.loc[~ node_text.index.isin(clusters) ] = node_labels.loc[~ node_labels.index.isin(clusters) ] # set non cluster values to 0 for now
+
+    #node_text = [x+" percent: "+ str(y) for x,y in list(zip(node_labels, node_size))]
 
     log_transform = False
     if(log_transform == True):
@@ -396,10 +403,11 @@ def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
     edges_to_keep = graph_components['edges_to_keep']
     graph = graph.edge_subgraph(edges_to_keep)
     graph_components = get_graph_components(graph = graph,data = data, clusters = clusters)
-    #sub_colors = graph_components['node_color'].loc[list(graph.nodes)]
-    #sub_sizes = graph_components['node_size'].loc[list(graph.nodes)]
-    sub_colors = graph_components['node_color']
-    sub_sizes = graph_components['node_size']
+    sub_colors = graph_components['node_color'].loc[list(graph.nodes)]
+    sub_sizes = graph_components['node_size'].loc[list(graph.nodes)]
+    node_text = graph_components['node_text'].loc[list(graph.nodes)]
+    #sub_colors = graph_components['node_color']
+    #sub_sizes = graph_components['node_size']
     
     pos = graphviz_layout(graph, prog="twopi")
     nodes = list(graph.nodes)
@@ -466,7 +474,7 @@ def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
 
                                  line=dict(color='rgb(50,50,50)', width=0.5)
                                  ),
-                   text=graph_components['node_text'],
+                   text=node_text,
                    hoverinfo='text'
 
                    )

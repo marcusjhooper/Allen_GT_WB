@@ -131,7 +131,7 @@ styles = {
 app = Dash(__name__)
 
 app.layout = html.Div([
-    html.H1(children='WB data viewer', style={'textAlign':'center'}),
+    html.H1(children='WB GT viewer', style={'textAlign':'center'}),
     
 # input-----------------------------------------------------------
     html.Div(className='row', children=[
