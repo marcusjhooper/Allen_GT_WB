@@ -336,14 +336,19 @@ def update_graphs(taxonomy_filter,dataset_filter, row_ids, selected_row_ids,acti
 def make_bar_chart(taxonomy_filter,dataset_filter, row_ids, selected_row_ids,clickData,resolution, cldf = cldf, df = df, counts_data = counts_data ):
     #subset to dataset of interest
     cldf_select = compute_counts_return_cldf(groupBy = resolution, df = counts_data, cldf = cldf, dataset_filter = dataset_filter)
-    try:
-        clickData
-        print(clickData)
-        graph3 = build_plotly_bar(data = cldf_select,groupBy = resolution, clickData = clickData)
-    except NameError:
-        graph3 = build_plotly_bar_init(data = cldf_select,groupBy = resolution)
-    else:
-        graph3 = build_plotly_bar_init(data = cldf_select,groupBy = resolution)
+    # try:
+    #     if clickData is None:
+    #         clickData = default_click_data
+    #     print(clickData)
+    #     graph3 = build_plotly_bar(data = cldf_select,groupBy = resolution, clickData = clickData)
+    if clickData is None:
+        clickData = default_click_data
+    print(clickData)
+    graph3 = build_plotly_bar(data = cldf_select,groupBy = resolution, clickData = clickData)
+    # except NameError:
+        # graph3 = build_plotly_bar_init(data = cldf_select,groupBy = resolution)
+    # else:
+        # graph3 = build_plotly_bar_init(data = cldf_select,groupBy = resolution)
     return graph3
 
 

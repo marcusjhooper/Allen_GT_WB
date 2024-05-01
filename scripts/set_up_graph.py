@@ -36,7 +36,25 @@ root_value = "gray" # black
 pd.options.mode.chained_assignment = None
 log_transform = False
 
-
+default_click_data = {
+  "points": [
+    {
+      "curveNumber": 0,
+      "pointNumber": 0,
+      "pointIndex": 0,
+      "x": "046 Vip Gaba",
+      "y": 16,
+      "label": "046 Vip Gaba",
+      "value": 16,
+      "bbox": {
+        "x0": 2012.57,
+        "x1": 2169.1,
+        "y0": 776.0699999999999,
+        "y1": 776.0699999999999
+      }
+    }
+  ]
+}
 
 #os.chdir('/allen/programs/celltypes/workgroups/mct-t200/marcus/VGT/app/WB_hierarchy/')
 
@@ -238,25 +256,7 @@ def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
 
 
 
-default_click_data = {
-  "points": [
-    {
-      "curveNumber": 0,
-      "pointNumber": 0,
-      "pointIndex": 0,
-      "x": "046 Vip Gaba",
-      "y": 16,
-      "label": "046 Vip Gaba",
-      "value": 16,
-      "bbox": {
-        "x0": 2012.57,
-        "x1": 2169.1,
-        "y0": 776.0699999999999,
-        "y1": 776.0699999999999
-      }
-    }
-  ]
-}
+
 
 
 def build_plotly_bar(data,groupBy,clickData = default_click_data, width=800, height=800):
@@ -281,22 +281,33 @@ def build_plotly_bar(data,groupBy,clickData = default_click_data, width=800, hei
 
     color_col = groupBy.replace('_id_label','_color')
     print(clickData)
-    # if(clickData !="X"):
-    #     data = data.reset_index()
-    #     selected_group = clickData["points"][0]["label"]
-    #     indexer = data[data[groupBy] == selected_group].index    
-    #     data.loc[indexer, color_col] = 'red'
-
     data = data[data[prefix+'_counts'] !=0]
+    data.index = data[groupBy]
+    try:
+        data.loc[clickData["points"][0]["label"], color_col] = '#FF0000' #change clicked bar to red
+    except Exception:
+        pass
     #data = [go.Bar(x = data[groupBy],y = data[prefix+"_counts"],color= data[color_col])]
-    fig1 = px.bar(data, x=groupBy, y=prefix+"_counts",
-             hover_data=[groupBy,prefix+"_counts"], color=color_col, height=height, width = width)
+    #fig1 = px.bar(data, x=groupBy, y=prefix+"_counts",
+    #         hover_data=[groupBy,prefix+"_counts"], marker_color=color_col, height=height, width = width)
+    fig1 = go.Figure(data=[go.Bar(
+        x = data[groupBy],
+        y = data[prefix+"_counts"],
+        marker_color=data[color_col]
+        )])
+    fig1.update_layout(
+    autosize=False,
+    width=800,
+    height=800,
+    yaxis_title=dict(text = "N",font=dict(size=20))
+    )
+    
     #fig1=go.Figure(data=data, layout=layout)
     #fig1.update_layout(yaxis={'visible': False, 'showticklabels': False})
     #fig1.update_layout(xaxis={'visible': False, 'showticklabels': False})
     return fig1
 
-def build_plotly_bar_init(data,groupBy, width=800, height=800):
+def build_plotly_bar_init(data,groupBy, width=800, height=800,cldf = cldf):
 
     prefix = groupBy.replace("_id_label","")
     axis=dict(showline=False,zeroline=False,
@@ -317,12 +328,18 @@ def build_plotly_bar_init(data,groupBy, width=800, height=800):
                )]
                  )
 
+
     color_col = groupBy.replace('_id_label','_color')
     data = data[data[prefix+'_counts'] !=0]
     print(data.head())
     data[groupBy]
     data = [go.Bar(x = data[groupBy],y = data[prefix+"_counts"])]
     fig1=go.Figure(data=data, layout=layout)
+    fig1.update_layout(
+    xaxis = dict(
+        tickfont = dict(size=16)),
+    yaxis = dict(
+        tickfont = dict(size=16)))
     #fig1.update_layout(yaxis={'visible': False, 'showticklabels': False})
     #fig1.update_layout(xaxis={'visible': False, 'showticklabels': False})
     return fig1
