@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "locale": "en_CA.UTF-8",
+  "metadata": {
+    "appmode": "python-dash",
+    "entrypoint": "main"
+  },
+  "python": {
+    "version": "3.9.19",
+    "package_manager": {
+      "name": "pip",
+      "version": "23.3.1",
+      "package_file": "requirements.txt"
+    }
+  },
+  "files": {
+    "requirements.txt": {
+      "checksum": "06f9da0444069313d2f8d13c256da2ae"
+    },
+    "LICENSE": {
+      "checksum": "1ebbd3e34237af26da5dc08a4e440464"
+    },
+    "README.md": {
+      "checksum": "9e08846f9291ab8e9929342a32c0ec6b"
+    },
+    "main.py": {
+      "checksum": "9f644393f8814e95d59cac91c3f88936"
+    },
+    "pip_requirements.txt": {
+      "checksum": "516361395676205d0c26b23f082136e9"
+    },
+    "scripts/main.py": {
+      "checksum": "9f644393f8814e95d59cac91c3f88936"
+    },
+    "scripts/set_up_graph.py": {
+      "checksum": "9c9f4a6a094ab51bbd379bd32a63bf05"
+    }
+  }
+}
