@@ -8,7 +8,6 @@ import io
 import urllib.request
 import re
 import os
-import polars
 import pandas as pd
 import seaborn as sns
 import networkx
