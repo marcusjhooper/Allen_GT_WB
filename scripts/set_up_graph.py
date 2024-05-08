@@ -238,7 +238,7 @@ def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
         df = df
     else:
         df = df[df['unique_condition'] == dataset_filter]
-
+        
     df[prefix+'_counts'] = df.groupby(['unique_condition',groupBy])[groupBy].transform('count')
     df['total_counts'] = df.groupby(['unique_condition'])['unique_condition'].transform('count')
     df[prefix+'_percent'] = (100*df[prefix+'_counts']) / (df['total_counts'])
