@@ -34,7 +34,7 @@ import s3fs
 test = False
 if test == True:
     exec(open("./scripts/set_up_graph.py").read())#
-    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/SmartSeq_all_annotation_hmapped.csv'
+    data_file = './SmartSeq_all_annotation_hmapped.csv'
     smart_seq_data = pd.read_csv(data_file)
     cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
     clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
@@ -44,16 +44,17 @@ if test == True:
     MER = pd.read_feather('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/app_MERFISH_data.feather')
     flex_test = pd.read_feather('s3://mh-allen-gt-wb/metadata_AIT21_10x_flex_nuclei.feather')
 
-exec(open("./scripts/set_up_graph.py").read())#
-data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/SmartSeq_all_annotation_hmapped.csv'
-smart_seq_data = pd.read_csv(data_file)
-cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
-clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
-sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')
-clas = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - classes 230815.tsv')
-sup = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - supertypes 230815.tsv')
-MER = pd.read_feather('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/app_MERFISH_data.feather')
-flex_test = pd.read_feather('s3://mh-allen-gt-wb/metadata_AIT21_10x_flex_nuclei.feather')
+elif test ==False:
+    exec(open("./scripts/set_up_graph.py").read())#
+    data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/SmartSeq_all_annotation_hmapped.csv'
+    smart_seq_data = pd.read_csv(data_file)
+    cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
+    clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
+    sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')
+    clas = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - classes 230815.tsv')
+    sup = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - supertypes 230815.tsv')
+    MER = pd.read_feather('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/app_MERFISH_data.feather')
+    flex_test = pd.read_feather('s3://mh-allen-gt-wb/metadata_AIT21_10x_flex_nuclei.feather')
 
 
 #### read data and set up colors
@@ -77,10 +78,7 @@ cldf = cldf.merge(right = clas[['class_id_label','class_color']], on = 'class_id
 root = pd.DataFrame({'id' : ['0_WB'],'node_var' : [root_value]})
 
 
-#available datasets
-dataset_dict =dict({
-    "VGT_smart_seq": smart_seq_data,
-    "10x_flex_test": flex_test})
+
 
 #read data
 
@@ -115,6 +113,26 @@ styles = {
     }
 }
 
+
+#things that may need changing... 
+smart_seq_data["LabTracksID"] = smart_seq_data["LabTracksID"].astype('str')
+flex_test['experiment'] = flex_test['experiment'].astype('str')
+flex_test['unique_condition'] = flex_test[["experiment","exp_bc"]].agg(" ".join, axis=1)
+for i in smart_seq_data.columns:
+    smart_seq_data[i] = smart_seq_data[i].astype('str')
+smart_seq_data['unique_condition'] = smart_seq_data[["LabTracksID",'full_genotype','injection_materials',"facs_population_plan",'Region','roi']].agg(" ".join, axis=1)
+
+
+#available datasets - selected using dataset_selector
+dataset_dict =dict({
+    "VGT_smart_seq": smart_seq_data,
+    "10x_flex_test": flex_test})
+
+#what to group by for each dataset...
+groupBy_options_dict = dict({
+    "VGT_smart_seq":smart_seq_data[["LabTracksID",'full_genotype','injection_materials',"facs_population_plan",'Region','roi']].agg(" ".join, axis=1).unique().tolist()+["All"],
+    "10x_flex_test": flex_test[["experiment","exp_bc"]].agg(" ".join, axis=1).unique().tolist()+["All"]
+    })
 
 
 # app ui-------------------------------------------------------------
@@ -166,8 +184,8 @@ app.layout = html.Div([
                 ),
                 html.Label(['EC ID'], style={'font-weight': 'bold', "text-align": "center"}),
                 dcc.Dropdown(
-                    id='dropdown_dataset_filter',options=counts_data.unique_condition.unique().tolist()+['All'],
-                    value='All',searchable=True,clearable=False
+                    id='experiment_filter',#,options=counts_data.unique_condition.unique().tolist()+['All']
+                    value='All',searchable=True,clearable=False,
                 ),
 
                 
@@ -183,17 +201,7 @@ app.layout = html.Div([
 
 
             ],style=dict(width='33.33%')),
-        # html.Div(children=[
-        #         html.Label(['dataset_selector'], style={'font-weight': 'bold', "text-align": "center"}),
-        #         dcc.Dropdown(
-        #             id='dataset_selector',
-        #             options=['VGT_smart_seq','10x_flex_test'],
-        #             value='VGT_smart_seq',
-        #             clearable=False,
-        #             searchable=True
-        #         ),
 
-        #     ],style=dict(width='33.33%')),
 
     ],style=dict(display='flex')),
 
@@ -261,7 +269,18 @@ app.layout = html.Div([
 
 #app functions -------------------------------------------
 
-#prep/load data
+#dynamically set options
+
+@app.callback(
+    Output("experiment_filter", "options"),
+    [Input("experiment_filter", "search_value"), Input("dataset_selector", "value")],
+)
+def batch_options(search_value, dataset_selector):
+    if dataset_selector is None:
+        return [{"label": i, "value": i} for i in groupBy_options_dict]
+    else:
+        return [{"label": i, "value": i} for i in groupBy_options_dict[dataset_selector]]
+
 
 
 def update_data(dataset_selector, cldf = cldf):
@@ -275,10 +294,6 @@ def update_data(dataset_selector, cldf = cldf):
     counts_data['LabTracksID'] = counts_data['external_donor_name'].astype('str')
     counts_data['LabTracksID'] = counts_data['LabTracksID'].astype('str')
     counts_data = counts_data.fillna('')
-    try:
-        counts_data["unique_condition"] = counts_data[["LabTracksID",'full_genotype','injection_materials',"facs_population_plan",'Region','roi']].agg(" ".join, axis=1)
-    except Exception:
-        counts_data["unique_condition"] = counts_data[["LabTracksID"]].agg(" ".join, axis=1)
     counts_data = counts_data.merge(right = cldf[['cluster_id_label','cluster_color','subclass_color','supertype_color','class_color']], on = 'cluster_id_label')
     return(counts_data)
 
@@ -311,7 +326,7 @@ def clear(n_clicks):
     Output('graph1', 'figure'),
     Output('graph2','figure'),
     Input('dropdown_taxonomy_filter', 'value'),
-    Input('dropdown_dataset_filter', 'value'),
+    Input('experiment_filter', 'value'),
     Input('tbl', 'derived_virtual_row_ids'),
     Input('tbl', 'selected_row_ids'),
     Input('tbl', 'active_cell'),
@@ -357,7 +372,7 @@ def update_graphs(taxonomy_filter,dataset_filter, row_ids, selected_row_ids,acti
 @callback(
     Output('graph3','figure'),
     Input('dropdown_taxonomy_filter', 'value'),
-    Input('dropdown_dataset_filter', 'value'),
+    Input('experiment_filter', 'value'),
     Input('tbl', 'derived_virtual_row_ids'),
     Input('tbl', 'selected_row_ids'),
     Input('graph3', 'clickData'),
