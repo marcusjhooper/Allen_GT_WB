@@ -286,9 +286,6 @@ def build_plotly_bar(data,groupBy,clickData = default_click_data, width=800, hei
         data.loc[clickData["points"][0]["label"], color_col] = '#FF0000' #change clicked bar to red
     except Exception:
         pass
-    #data = [go.Bar(x = data[groupBy],y = data[prefix+"_counts"],color= data[color_col])]
-    #fig1 = px.bar(data, x=groupBy, y=prefix+"_counts",
-    #         hover_data=[groupBy,prefix+"_counts"], marker_color=color_col, height=height, width = width)
     fig1 = go.Figure(data=[go.Bar(
         x = data[groupBy],
         y = data[prefix+"_counts"],
@@ -298,12 +295,10 @@ def build_plotly_bar(data,groupBy,clickData = default_click_data, width=800, hei
     autosize=False,
     width=800,
     height=800,
-    yaxis_title=dict(text = "N",font=dict(size=20))
+    yaxis_title=dict(text = "N",font=dict(size=20)),
+    xaxis=dict(tickangle= 90,showticklabels= True,type= 'category',dtick=1)
     )
     
-    #fig1=go.Figure(data=data, layout=layout)
-    #fig1.update_layout(yaxis={'visible': False, 'showticklabels': False})
-    #fig1.update_layout(xaxis={'visible': False, 'showticklabels': False})
     return fig1
 
 def build_plotly_bar_init(data,groupBy, width=800, height=800,cldf = cldf):

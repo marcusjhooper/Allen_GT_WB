@@ -31,7 +31,7 @@ import s3fs
 
 
 
-test = True
+test = False
 if test == True:
     exec(open("./scripts/set_up_graph.py").read())#
     data_file = './SmartSeq_all_annotation_hmapped.csv'
