@@ -88,7 +88,7 @@ counts_data = pd.read_csv(data_file)
 df = cldf[['cl','cluster_id_label', 'subclass_id_label', 'class_id_label','anatomical_annotation']] 
 df = df[df['subclass_id_label'] != "0_WB"]
 df['id'] = df['cl']
-
+df.index = df['id']
 
 #cleanup - if id_label columns don't exist, use regular label columns
 #counts_data.columns = counts_data.columns.str.replace('_WB_map','')
@@ -189,18 +189,18 @@ app.layout = html.Div([
                 ),
 
                 
-            ], style=dict(width='33.33%')),
+            ], style=dict(width='50.00%')),
 
 
         html.Div(children=[
                 html.Label(['Resolution'], style={'font-weight': 'bold', "text-align": "center"}),
                 dcc.Dropdown(
-                    id='resolution',options=['class_id_label','subclass_id_label','cluster_id_label']+['All'],
+                    id='resolution',options=['class_id_label','subclass_id_label','cluster_id_label'],
                     value='subclass_id_label',clearable=False,searchable=True
                 ),
 
 
-            ],style=dict(width='33.33%')),
+            ],style=dict(width='25%')),
 
 
     ],style=dict(display='flex')),
@@ -338,21 +338,22 @@ def update_graphs(taxonomy_filter,dataset_filter, row_ids, selected_row_ids,acti
     #get counts and percents by unique condition, currently library_prep
     
     # if dataset_filter on, get counts by unique condition, else, get counts for every expt
-    #if dataset_filter == "All":
-    #   counts_data['unique_condition'] = "All"
     counts_data = update_data(dataset_selector = dataset_selector, cldf = cldf)
     counts_data_cluster = counts_data
     counts_data_subclass = counts_data
-    cldf_cluster = compute_counts_return_cldf(groupBy = "cluster_id_label", df = counts_data, cldf = cldf, dataset_filter = dataset_filter)
-    cldf_select = compute_counts_return_cldf(groupBy = resolution, df = counts_data, cldf = cldf, dataset_filter = dataset_filter)
+    cldf_cluster = compute_counts_return_cldf(groupBy = "cluster_id_label", df = counts_data, cldf = cldf, dataset_filter = dataset_filter,drop_duplicates_by_groupBy = True)
+    cldf_select = compute_counts_return_cldf(groupBy = resolution, df = counts_data, cldf = cldf, dataset_filter = dataset_filter,drop_duplicates_by_groupBy = False)
     #subset graph
     selected = active_cell if active_cell else "All"
     if selected == "All":
         sub_df_graph = cldf_cluster
     else:
         groupBy = selected['column_id']
-        active_row_id = active_cell['row_id'] if active_cell else None
-        selected_value = pd.DataFrame(df).loc[selected['row_id'], groupBy]
+        data_row= active_cell['row_id']
+        data_col_id = active_cell['column_id']
+        #active_row_id = active_cell['row_id'] if active_cell else None
+        #selected_value = pd.DataFrame(df).loc[selected['row_id'], groupBy]
+        selected_value = pd.DataFrame(df).loc[data_row, data_col_id]
         sub_df_graph = cldf_cluster[(cldf_cluster[groupBy] == selected_value) | (cldf_cluster['source'] == "WB")]
 
     if ((taxonomy_filter != "All") ):
@@ -382,7 +383,7 @@ def update_graphs(taxonomy_filter,dataset_filter, row_ids, selected_row_ids,acti
 def make_bar_chart(taxonomy_filter,dataset_filter, row_ids, selected_row_ids,clickData,resolution, dataset_selector , cldf = cldf, df = df ):
     #subset to dataset of interest
     counts_data = update_data(dataset_selector = dataset_selector, cldf = cldf)
-    cldf_select = compute_counts_return_cldf(groupBy = resolution, df = counts_data, cldf = cldf, dataset_filter = dataset_filter)
+    cldf_select = compute_counts_return_cldf(groupBy = resolution, df = counts_data, cldf = cldf, dataset_filter = dataset_filter,drop_duplicates_by_groupBy = True)
     # try:
     #     if clickData is None:
     #         clickData = default_click_data
@@ -540,8 +541,10 @@ def update_merfish_2(img_slider,active_cell):
     )
     return fig
 
-
-
-if __name__ == '__main__':
-    app.run_server(host='127.0.0.1')
+if test == True:
+     if __name__ == '__main__':
+         app.run_server(host='127.0.0.1', debug = True)
+elif test == False:
+    if __name__ == '__main__':
+        app.run_server(host='127.0.0.1')
 
