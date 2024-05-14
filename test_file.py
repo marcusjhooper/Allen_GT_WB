@@ -31,7 +31,7 @@ import s3fs
 
 
 
-test = False
+test = True
 if test == True:
     exec(open("./scripts/set_up_graph.py").read())#
     data_file = './SmartSeq_all_annotation_hmapped.csv'
@@ -541,10 +541,14 @@ def update_merfish_2(img_slider,active_cell):
     )
     return fig
 
-if test == True:
-     if __name__ == '__main__':
-         app.run_server(host='127.0.0.1', debug = True)
-elif test == False:
-    if __name__ == '__main__':
-        app.run_server(host='127.0.0.1')
+#python3 -i test_file.py
+xxx #stops here
+app.run_server(host='127.0.0.1')
+
+# if test == True:
+#     if __name__ == '__main__':
+#         app.run_server(host='127.0.0.1', debug = True)
+#elif test == False:
+    #if __name__ == '__main__':
+        #app.run_server(host='127.0.0.1')
 

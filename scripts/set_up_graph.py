@@ -148,11 +148,12 @@ pos = graphviz_layout(G, prog="twopi")#plotly graph positions
 
 
 #---------------------------------functions
-def get_graph_components(graph = G,data = cldf, clusters = clusters,
+def get_graph_components(resolution,graph = G,data = cldf, clusters = clusters,
                         highlight_color = highlight_color,
                         regular_edge_width = regular_edge_width,
                         regular_edge_color = regular_edge_color,
-                        attr = 'cluster_percent', pos = pos):
+                        plot_what = 'percent', pos = pos):
+    attr = resolution.replace('_id_label','')+"_"+plot_what #typically "cluster_percent"
     #keep all clusters, supertypes, subclasses and classes from list of clusters
     nodes_to_keep = ["0_WB"] +clusters + data[data['cluster_id_label'].isin(clusters)].supertype_id_label.tolist() + data[data['cluster_id_label'].isin(clusters)].class_id_label.tolist() + data[data['cluster_id_label'].isin(clusters)].subclass_id_label.tolist()
     nodes_to_keep = pd.Series(nodes_to_keep).unique().tolist()
@@ -179,6 +180,7 @@ def get_graph_components(graph = G,data = cldf, clusters = clusters,
     node_attrs = node_attrs.drop_duplicates(subset = 'id')
     node_attrs.index = node_attrs['id']
     node_attrs.loc[~ node_attrs.index.isin(clusters),'node_var' ] = 0# set non cluster values to 0 for now
+    node_attrs = node_attrs.copy()
     
 
     #set up aesthetics
@@ -232,7 +234,7 @@ def update_image(clickData):
    return fig
 
 
-def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
+def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter,drop_duplicates_by_groupBy):
     prefix = groupBy.replace("_id_label","")
     if dataset_filter == "All":
         df = df
@@ -250,7 +252,8 @@ def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter):
     cldf_counts[prefix+'_counts'] = cldf_counts[prefix+'_counts'].replace(np.nan, 0)
     cldf_counts[prefix+'_percent'] = cldf_counts[prefix+'_percent'].replace(np.nan, 0)
     cldf_counts[prefix+'_counts'] = cldf_counts[prefix+'_counts'].astype('int')
-    cldf_counts = cldf_counts.drop_duplicates(subset=groupBy)
+    if drop_duplicates_by_groupBy == True:
+        cldf_counts = cldf_counts.drop_duplicates(subset=groupBy)
     return cldf_counts
 
 
@@ -341,7 +344,7 @@ def build_plotly_bar_init(data,groupBy, width=800, height=800,cldf = cldf):
 
 def build_plotly_taxonomy_full_graph(graph,data,clusters, width=800, height=800,
                                      regular_edge_color = 'lightgrey',highlight_color = 'springgreen'):
-    graph_components = get_graph_components(graph = graph,data = data, clusters = clusters)
+    graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters)
     pos = graphviz_layout(graph, prog="twopi")
     nodes = list(graph.nodes)
 
@@ -410,10 +413,10 @@ def build_plotly_taxonomy_full_graph(graph,data,clusters, width=800, height=800,
 
 def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
                                      regular_edge_color = 'darkgray',highlight_color = 'springgreen'):
-    graph_components = get_graph_components(graph = graph,data = data, clusters = clusters)
+    graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters)
     edges_to_keep = graph_components['edges_to_keep']
     graph = graph.edge_subgraph(edges_to_keep)
-    graph_components = get_graph_components(graph = graph,data = data, clusters = clusters)
+    graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters)
     sub_colors = graph_components['node_color'].loc[list(graph.nodes)]
     sub_sizes = graph_components['node_size'].loc[list(graph.nodes)]
     node_text = graph_components['node_text'].loc[list(graph.nodes)]
