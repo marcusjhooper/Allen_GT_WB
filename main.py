@@ -35,14 +35,15 @@ test = False
 if test == True:
     exec(open("./scripts/set_up_graph.py").read())#
     data_file = './SmartSeq_all_annotation_hmapped.csv'
-    smart_seq_data = pd.read_csv(data_file)
-    cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
-    clus = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - clusters 230815.tsv')
-    sub = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - subclasses 230815.tsv')
-    clas = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - classes 230815.tsv')
-    sup = pd.read_table('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/WB_colorpal - supertypes 230815.tsv')
-    MER = pd.read_feather('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/app_MERFISH_data.feather')
     flex_test = pd.read_feather('s3://mh-allen-gt-wb/metadata_AIT21_10x_flex_nuclei.feather')
+    os.chdir('/home/mh/app/Allen_GT_WB_dev/Allen_GT_WB') #local
+    smart_seq_data = pd.read_csv(data_file)
+    cldf = pd.read_feather('./cldf_local.feather')
+    clus = pd.read_feather('./clus_local.feather')
+    sub = pd.read_feather('./sub_local.feather')
+    clas = pd.read_feather('./clas_local.feather')
+    sup = pd.read_feather('./sup_local.feather')
+    MER = pd.read_feather('./MERFISH_test_small_local.feather')
 
 elif test ==False:
     exec(open("./scripts/set_up_graph.py").read())#
@@ -365,7 +366,7 @@ def update_graphs(taxonomy_filter,dataset_filter, row_ids, selected_row_ids,acti
     else:
         clusters =sub_df_graph.cluster_id_label.unique().tolist()
         graph1 = build_plotly_taxonomy_full_graph(graph=G,data = cldf_cluster,clusters = clusters)
-        graph2 = build_plotly_taxonomy_sub_graph(graph=G,data = cldf_cluster,clusters = clusters)
+        graph2 = build_plotly_taxonomy_sub_graph(graph=G,data = cldf_select,clusters = clusters, resolution = resolution)
     #graph3 = build_plotly_bar(data = cldf_select,groupBy = resolution)
     return graph1, graph2
 
