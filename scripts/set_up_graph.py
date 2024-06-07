@@ -1,5 +1,5 @@
-from PIL import Image
 import PIL
+from PIL import Image
 import requests
 from io import BytesIO
 import matplotlib
@@ -23,6 +23,7 @@ import plotly
 from plotly.graph_objs import *
 from itertools import compress
 import s3fs
+import math
 #pandas.read_feather('/allen/programs/celltypes/workgroups/rnaseqana')
 
 
@@ -64,13 +65,15 @@ default_click_data = {
 test = False
 
 if test == True:
-    os.chdir('/home/mh/app/WB_hierarchy/Allen_GT_WB/Allen_GT_WB') #local
-    cldf = pd.read_csv('/home/mh/app/WB_hierarchy_data/AIT21_updated_cldf_for_BG_with_parent.csv')
-    clus = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - clusters 230815.tsv')
-    sub = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - subclasses 230815.tsv')
-    clas = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - classes 230815.tsv')
-    sup = pd.read_table('/home/mh/app/WB_hierarchy_data/WB_colorpal - supertypes 230815.tsv')
-    MER = pd.read_feather('/home/mh/app/WB_hierarchy_data/app_MERFISH_data.feather')
+    os.chdir('/home/mh/app/Allen_GT_WB_dev/Allen_GT_WB') #local
+    data_file = './smart_seq_small_local.feather'
+    smart_seq_data = pd.read_feather(data_file)
+    cldf = pd.read_feather('./cldf_local.feather')
+    clus = pd.read_feather('./clus_local.feather')
+    sub = pd.read_feather('./sub_local.feather')
+    clas = pd.read_feather('./clas_local.feather')
+    sup = pd.read_feather('./sup_local.feather')
+    MER = pd.read_feather('./MERFISH_test_small_local.feather')
 
 elif test == False:
     #os.chdir('app/Allen_GT_WB')
@@ -152,7 +155,7 @@ def get_graph_components(resolution,graph = G,data = cldf, clusters = clusters,
                         highlight_color = highlight_color,
                         regular_edge_width = regular_edge_width,
                         regular_edge_color = regular_edge_color,
-                        plot_what = 'percent', pos = pos):
+                        plot_what = 'percent', pos = pos, circle_size = 2.5):
     attr = resolution.replace('_id_label','')+"_"+plot_what #typically "cluster_percent"
     #keep all clusters, supertypes, subclasses and classes from list of clusters
     nodes_to_keep = ["0_WB"] +clusters + data[data['cluster_id_label'].isin(clusters)].supertype_id_label.tolist() + data[data['cluster_id_label'].isin(clusters)].class_id_label.tolist() + data[data['cluster_id_label'].isin(clusters)].subclass_id_label.tolist()
@@ -164,41 +167,45 @@ def get_graph_components(resolution,graph = G,data = cldf, clusters = clusters,
         edges_sub = list(G.edges(node))
         edge_indices = list(range(0,len(edges_sub))) 
         edge_filter = [(edges_sub[edge][0] in nodes_to_keep)  &  (edges_sub[edge][1] in nodes_to_keep) for edge in edge_indices  ]
-        edge_filter
         edges_to_keep_sub = list(compress(edges_sub,edge_filter))
         edges_to_keep = edges_to_keep+edges_to_keep_sub
 
     #construct node attr column for size and color
     df = data[['class_id_label',attr]].drop_duplicates(subset = 'class_id_label')
+    df['default_node_size'] = 10
     df2 = data[['subclass_id_label',attr]].drop_duplicates(subset = 'subclass_id_label')
+    df2['default_node_size'] = 5
     df3 = data[['supertype_id_label',attr]].drop_duplicates(subset = 'supertype_id_label')
+    df3['default_node_size'] = 3
     df4 = data[['cluster_id_label',attr]].drop_duplicates(subset = 'cluster_id_label')
-    df5 = pd.DataFrame({'id' : ['root'],'node_var' : [1]})
+    df4['default_node_size'] = 1
+    df5 = pd.DataFrame({'id' : ['root'],'node_var' : [1],'default_node_size':50})
     for attr in [df,df2,df3,df4,df5]:
-        attr.columns = ['id','node_var']
+        attr.columns = ['id','node_var','default_node_size']
     node_attrs = pd.concat([df,df2,df3,df4,df5], ignore_index=True)
     node_attrs = node_attrs.drop_duplicates(subset = 'id')
     node_attrs.index = node_attrs['id']
-    node_attrs.loc[~ node_attrs.index.isin(clusters),'node_var' ] = 0# set non cluster values to 0 for now
+    node_attrs.loc[~ node_attrs.index.isin(data[resolution]),'node_var' ] = 0 #only show specified resolution
     node_attrs = node_attrs.copy()
-    
+    print(node_attrs)
 
     #set up aesthetics
-    node_size = node_attrs.loc[nodes,:]['node_var']
+    node_var = node_attrs.loc[nodes,:]['node_var']
     node_color = node_cols.loc[nodes,:]['node_var']
     node_labels = node_cols.loc[nodes,:]['id']
     node_labels.index = node_labels
-    node_text = node_labels+" percent: "+node_size.astype('str')
+    node_text = node_labels+" percent: "+round(node_var, 2).astype('str')
     node_text.index = node_labels
-    node_text.loc[~ node_text.index.isin(clusters) ] = node_labels.loc[~ node_labels.index.isin(clusters) ] # set non cluster values to 0 for now
-
+    #node_text.loc[~ node_text.index.isin(clusters) ] = node_labels.loc[~ node_labels.index.isin(clusters) ] # set non cluster values to 0 for now
+    default_node_size =circle_size * node_attrs.loc[nodes,:]['default_node_size']
+    node_size = np.log(circle_size * (node_var+1))
+    node_size[np.isnan(node_size)] = 0
     #node_text = [x+" percent: "+ str(y) for x,y in list(zip(node_labels, node_size))]
 
     log_transform = False
     if(log_transform == True):
         node_attrs['node_var'] = np.log10(node_attrs['node_var']+1)
-    scalar = 100
-    node_attrs['node_var'] = scalar * (node_attrs['node_var'])
+
     
 
 
@@ -209,29 +216,11 @@ def get_graph_components(resolution,graph = G,data = cldf, clusters = clusters,
     edge_col = {edge:highlight_color for edge in edges_to_keep}
     edge_col = edge_col | non_highlighted_edge_col
     plot_components = {"nodes_to_keep": nodes_to_keep,"edges_to_keep":edges_to_keep,"non_highlighted_edges": non_highlighted_edges, "edge_col": edge_col,
-                      "node_size": node_size, "node_color": node_color,"node_text": node_text}
+                      'default_node_size':default_node_size,"node_size": node_size, "node_color": node_color,"node_text": node_text}
     return plot_components
 
 
-def update_image(clickData):
-   color = ['blue'] * 4
 
-   fig = {
-       'data': [{
-           'type': 'bar',
-           'x': [1,2,3,4],
-           'y': [10,8,11,7],
-           'marker': {
-               'color': color
-           }
-       }],
-       'layout': {
-           'title': 'click a bar'
-       }
-   }
-   if clickData is not None:
-       fig['data'][0]['marker']['color'][clickData['points'][0]['pointNumber']] = 'red'
-   return fig
 
 
 def compute_counts_return_cldf(groupBy, df, cldf, dataset_filter,drop_duplicates_by_groupBy):
@@ -282,7 +271,6 @@ def build_plotly_bar(data,groupBy,clickData = default_click_data, width=800, hei
                )])
 
     color_col = groupBy.replace('_id_label','_color')
-    print(clickData)
     data = data[data[prefix+'_counts'] !=0]
     data.index = data[groupBy]
     try:
@@ -328,7 +316,6 @@ def build_plotly_bar_init(data,groupBy, width=800, height=800,cldf = cldf):
 
     color_col = groupBy.replace('_id_label','_color')
     data = data[data[prefix+'_counts'] !=0]
-    print(data.head())
     data[groupBy]
     data = [go.Bar(x = data[groupBy],y = data[prefix+"_counts"])]
     fig1=go.Figure(data=data, layout=layout)
@@ -342,11 +329,13 @@ def build_plotly_bar_init(data,groupBy, width=800, height=800,cldf = cldf):
     return fig1
 
 
-def build_plotly_taxonomy_full_graph(graph,data,clusters, width=800, height=800,
+def build_plotly_taxonomy_full_graph(graph,data,clusters, width=800, height=800,circle_size=1,
                                      regular_edge_color = 'lightgrey',highlight_color = 'springgreen'):
-    graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters)
+
+    graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters,circle_size = circle_size)
     pos = graphviz_layout(graph, prog="twopi")
     nodes = list(graph.nodes)
+    point_sizes = graph_components['default_node_size'].loc[list(graph.nodes)]
 
     Xv=[pos[k][0] for k in nodes] #all edges
     Yv=[pos[k][1] for k in nodes] #all edges
@@ -389,14 +378,14 @@ def build_plotly_taxonomy_full_graph(graph,data,clusters, width=800, height=800,
     trace4=Scatter(x=Xv,y=Yv,
                    mode='markers',name='net',
                    #marker_size = graph_components['node_size'],
-                   marker=dict(symbol='circle-dot',
-                                 size= 10,
-                                 color = graph_components['node_color'],
-                                 line=dict(color='rgb(50,50,50)', width=0.5)),
+                   marker=dict(symbol='circle',
+                                 size= point_sizes,
+                                 color = graph_components['node_color']
+                                 ),
                    text=graph_components['node_text'],
                    hoverinfo='text')
     trace5=Scatter(x=XHled,y=YHled,
-                   mode='lines',line=dict(color= highlight_color, width=2),
+                   mode='lines',line=dict(color= highlight_color, width=1),
                    hoverinfo='none')
     
     annot="AIT21"
@@ -411,12 +400,12 @@ def build_plotly_taxonomy_full_graph(graph,data,clusters, width=800, height=800,
 
 
 
-def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
+def build_plotly_taxonomy_sub_graph(graph,data,clusters, resolution, width=800, height=800,circle_size = 1,
                                      regular_edge_color = 'darkgray',highlight_color = 'springgreen'):
-    graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters)
+    graph_components = get_graph_components(resolution = resolution,graph = graph,data = data, clusters = clusters,circle_size = circle_size)
     edges_to_keep = graph_components['edges_to_keep']
     graph = graph.edge_subgraph(edges_to_keep)
-    graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters)
+    #graph_components = get_graph_components(resolution = 'cluster_id_label',graph = graph,data = data, clusters = clusters)
     sub_colors = graph_components['node_color'].loc[list(graph.nodes)]
     sub_sizes = graph_components['node_size'].loc[list(graph.nodes)]
     node_text = graph_components['node_text'].loc[list(graph.nodes)]
@@ -479,14 +468,10 @@ def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
                    y=Yv,
                    mode='markers',
                    name='net',
-                   marker=dict(symbol='circle-dot',
-
-
-                                 size= sub_sizes,
-                                 sizeref=2.*max(sub_sizes)/(10.**2),
-                                 color = sub_colors,
-
-                                 line=dict(color='rgb(50,50,50)', width=0.5)
+                   marker=dict(symbol='circle',
+                                 size= sub_sizes*circle_size,
+                                 sizeref= 2. * max(sub_sizes) / (10 ** 2),
+                                 color = sub_colors
                                  ),
                    text=node_text,
                    hoverinfo='text'
@@ -509,11 +494,13 @@ def build_plotly_taxonomy_sub_graph(graph,data,clusters, width=800, height=800,
 
 ##orig_full_graph - for resetting
 if test == True:
-    cldf = pd.read_csv('/home/mh/app/WB_hierarchy_data/AIT21_updated_cldf_for_BG_with_parent.csv')
-    data_file = '/home/mh/app/WB_hierarchy_data/test_dataset.csv'
+    cldf = pd.read_feather('./cldf_local.feather')
+    data_file = './smart_seq_small_local.feather'
+    counts_data = pd.read_feather(data_file)
 elif test == False:
     cldf = pd.read_csv('s3://mh-allen-gt-wb/app/Allen_GT_WB/data/AIT21_updated_cldf_for_BG_with_parent.csv')
     data_file = 's3://mh-allen-gt-wb/app/Allen_GT_WB/data/test_dataset.csv'
+    counts_data = pd.read_csv(data_file,low_memory = False)
 
 cldf.index = cldf['cl']
 
@@ -521,7 +508,7 @@ cldf.index = cldf['cl']
 
 
 
-counts_data = pd.read_csv(data_file,low_memory = False)
+
 
 #table for filtering
 df = cldf[['cl','cluster_id_label', 'subclass_id_label', 'class_id_label','anatomical_annotation']] 
@@ -549,7 +536,7 @@ counts_data['cluster_counts'] = counts_data.groupby(['unique_condition','cluster
 counts_data['total_counts'] = counts_data.groupby(['unique_condition'])['unique_condition'].transform('count')
 counts_data['cluster_percent'] = (100*counts_data['cluster_counts']) / (counts_data['total_counts'])
 counts_data = counts_data[['cluster_id_label','cluster_counts','unique_condition','cluster_percent']]
-dataset_filter= counts_data['unique_condition'][0]
+dataset_filter= counts_data['unique_condition'].tolist()[0]
 counts_data = counts_data[counts_data['unique_condition'] == dataset_filter]
 counts_data['include'] = counts_data['cluster_id_label']
 #merge with taxonomy, get counts and percents ready
@@ -562,8 +549,8 @@ cldf = cldf.drop_duplicates(subset='cl')
 
 
 clusters =cldf.cluster_id_label.unique().tolist()
-orig_full_graph = build_plotly_taxonomy_full_graph(graph=G,data = cldf,clusters = clusters)
-orig_sub_graph = build_plotly_taxonomy_sub_graph(graph=G,data = cldf,clusters = clusters)
+orig_full_graph = build_plotly_taxonomy_full_graph(graph=G,data = cldf,clusters = clusters,)
+orig_sub_graph = build_plotly_taxonomy_sub_graph(graph=G,data = cldf,clusters = clusters, resolution = 'cluster_id_label')
 
 
 
